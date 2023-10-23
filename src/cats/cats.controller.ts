@@ -1,7 +1,7 @@
 // cats.controller.ts
-import { Controller, Get, Post, Body, Delete, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
 import { CatsService } from './cats.service';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CatDto } from './cat.dto';
 import { Cat } from './cat.schema';
 
@@ -13,8 +13,21 @@ export class CatsController {
 
   @Post()
   @ApiBody({ type: CatDto })
-  async create(@Body() catData: Cat): Promise<Cat> {
-    return this.catsService.create(catData);
+  @ApiResponse({ status: 201, description: 'O gato foi criado com sucesso.' })
+  async create(@Body() catData: Cat): Promise<string> {
+    try {
+      const isDataValid = this.catsService.create(catData);
+      if (isDataValid) {
+        await this.catsService.create(catData);
+        // Retorna uma mensagem no corpo da resposta e define o código de status 201
+        return 'Gato criado com sucesso!';
+      } else {
+        // Se os dados não forem válidos, lança uma exceção com código de status 400 (Bad Request)
+        throw new HttpException('Dados do gato inválidos.', HttpStatus.BAD_REQUEST);
+      }
+    } catch (error) {
+      throw new HttpException('Erro ao criar o gato.', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get(':id')
