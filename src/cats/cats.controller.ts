@@ -31,10 +31,16 @@ export class CatsController {
       throw error;
     }
   }
-  
+  //retorna tudo 
+  //@Get()
+  //async findAll(): Promise<Cat[]> {
+  //  return this.catsService.findAll();
+  //}
+
   @Get()
-  async findAll(): Promise<Cat[]> {
-    return this.catsService.findAll();
+  async findAllNames(): Promise<string[]> {
+    const cats = await this.catsService.findAll();
+    return cats.map(cat => cat.name);
   }
 
   @Delete(':id')
